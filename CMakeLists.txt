@@ -11,3 +11,10 @@ add_executable(cmake_demo main.cpp)
 target_compile_features(cmake_demo PRIVATE cxx_std_17)
 
 target_link_libraries(cmake_demo PRIVATE math_lib)
+
+enable_testing()
+
+add_test(
+    NAME CMakeDemoTest
+    COMMAND cmake_demo
+)
