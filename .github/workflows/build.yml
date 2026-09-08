@@ -48,3 +48,4 @@ jobs:
         with:
           name: cmake-demo-${{ matrix.os }}-${{ matrix.build_type }}
           path: artifacts/
+          retention-days: 7
