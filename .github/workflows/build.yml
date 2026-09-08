@@ -49,10 +49,10 @@ jobs:
           name: cmake-demo-${{ matrix.os }}-${{ matrix.build_type }}
           path: artifacts/
           retention-days: 7
-        test:
-          needs: build
-          runs-on: ubuntu-latest
+  test:
+    needs: build
+    runs-on: ubuntu-latest
 
-        steps:
-       - name: Test job started
-          run: echo "Test job is running"
+    steps:
+      - name: Test job started
+        run: echo "Test job is running"
