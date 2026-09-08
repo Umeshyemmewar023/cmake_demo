@@ -28,7 +28,7 @@ jobs:
         run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
       
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cmake-demo-${{ matrix.os }}-${{ matrix.build_type }}
           path: build/
