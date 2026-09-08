@@ -23,12 +23,28 @@ jobs:
 
       - name: Build
         run: cmake --build build --config ${{ matrix.build_type }}
-      
+
       - name: Run tests
         run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
-      
-      - name: Upload build artifact
+
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          mkdir -p artifacts
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp build/${{ matrix.build_type }}/cmake_demo.exe artifacts/
+            cp build/${{ matrix.build_type }}/math_lib.dll artifacts/
+          elif [ "${{ runner.os }}" = "macOS" ]; then
+            cp build/cmake_demo artifacts/
+            cp build/libmath_lib.dylib artifacts/
+          else
+            cp build/cmake_demo artifacts/
+            cp build/libmath_lib.so artifacts/
+          fi
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v5
         with:
           name: cmake-demo-${{ matrix.os }}-${{ matrix.build_type }}
-          path: build/
+          path: artifacts/
