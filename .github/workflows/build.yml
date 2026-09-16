@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/separate-build-test
     tags:
       - 'v*'
 
@@ -46,8 +47,47 @@ jobs:
           fi
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: cmake-demo-${{ matrix.os }}-${{ matrix.build_type }}
           path: artifacts/
           retention-days: 7
+  test:
+    needs: build
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        build_type: [Debug, Release]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cmake-demo-${{ matrix.os }}-${{ matrix.build_type }}
+          path: artifacts/
+
+      - name: Test job started
+        run: echo "Test job is running"
+
+  package:
+    needs: test
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create package
+        run: |
+          mkdir package
+          echo "CMake Demo Package" > package/README.txt
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmake-demo-package
+          path: package/
