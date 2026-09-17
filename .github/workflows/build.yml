@@ -79,6 +79,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      PACKAGE_TYPE: release-package
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -98,6 +101,7 @@ jobs:
         run: |
           echo "Application: ${{ env.APP_NAME }}"
           echo "Version: ${{ env.APP_VERSION }}"
+          echo "Package type: ${{ env.PACKAGE_TYPE }}"
 
   release:
     needs: package
