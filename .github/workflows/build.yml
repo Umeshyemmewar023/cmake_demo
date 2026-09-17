@@ -6,6 +6,9 @@ on:
       - main
     tags:
       - 'v*'
+env:
+  APP_NAME: cmake-demo
+  APP_VERSION: 1.2.0
 
 jobs:
   build:
@@ -90,6 +93,11 @@ jobs:
         with:
           name: cmake-demo-package
           path: package/
+
+      - name: Show application information
+        run: |
+          echo "Application: ${{ env.APP_NAME }}"
+          echo "Version: ${{ env.APP_VERSION }}"
 
   release:
     needs: package
