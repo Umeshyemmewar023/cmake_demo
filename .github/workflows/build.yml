@@ -6,6 +6,8 @@ on:
       - main
     tags:
       - 'v*'
+  workflow_dispatch:
+
 env:
   APP_NAME: cmake-demo
   APP_VERSION: 1.2.0
