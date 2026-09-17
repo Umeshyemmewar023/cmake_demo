@@ -102,6 +102,13 @@ jobs:
           echo "Application: ${{ env.APP_NAME }}"
           echo "Version: ${{ env.APP_VERSION }}"
           echo "Package type: ${{ env.PACKAGE_TYPE }}"
+ 
+      - name: Test GitHub Secret
+        env:
+          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+        run: |
+          echo "Secret is available to the workflow"
+          echo "Secret length: ${#DEMO_SECRET}"
 
   release:
     needs: package
