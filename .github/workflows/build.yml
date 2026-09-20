@@ -10,7 +10,6 @@ on:
 
 env:
   APP_NAME: cmake-demo
-  APP_VERSION: 1.2.0
 
 jobs:
   build:
@@ -119,7 +118,6 @@ jobs:
       - name: Show application information
         run: |
           echo "Application: ${{ env.APP_NAME }}"
-          echo "Version: ${{ env.APP_VERSION }}"
           echo "Package type: ${{ env.PACKAGE_TYPE }}"
 
       - name: Test GitHub Secret
@@ -131,6 +129,7 @@ jobs:
           
   upload-to-s3:
     needs: package
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     permissions:
@@ -152,7 +151,11 @@ jobs:
 
       - name: Upload package to S3
         run: |
-          aws s3 cp package/ s3://cmake-demo-umesh-2026-2306/ --recursive
+          VERSION="${{ github.ref_name }}"
+          echo "Uploading version: ${VERSION}"
+          aws s3 cp package/ \
+            "s3://cmake-demo-umesh-2026-2306/releases/${VERSION}/" \
+            --recursive
   release:
     needs: package
     if: startsWith(github.ref, 'refs/tags/v')
