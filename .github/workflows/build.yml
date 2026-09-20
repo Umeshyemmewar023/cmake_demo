@@ -184,7 +184,9 @@ jobs:
             --title "CMake Demo ${{ github.ref_name }}" \
             --generate-notes
   deploy:
-    needs: release
+    needs: 
+    - release
+    - upload-to-s3
 
     if: startsWith(github.ref, 'refs/tags/v')
 
@@ -202,12 +204,39 @@ jobs:
           role-to-assume: arn:aws:iam::133197206066:role/GitHubActions-S3-Deploy
           aws-region: ap-south-2
 
-      - name: Test SSM connection
+      - name: Deploy to Ubuntu EC2 using SSM
         env:
           AWS_REGION: ap-south-2
+          INSTANCE_ID: i-0e0fd8984113cc520
+          VERSION: ${{ github.ref_name }}
+          S3_BUCKET: cmake-demo-umesh-2026-2306
         run: |
-          aws ssm send-command \
+          COMMAND_ID=$(aws ssm send-command \
             --region "$AWS_REGION" \
-            --instance-ids "i-0e0fd8984113cc520" \
+            --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["echo Hello from GitHub Actions"]'
+            --parameters "commands=[
+              \"set -e\",
+              \"echo Deploying version $VERSION\",
+              \"rm -rf /home/ubuntu/deployment\",
+              \"mkdir -p /home/ubuntu/deployment\",
+              \"aws s3 cp s3://$S3_BUCKET/releases/$VERSION/cmake-demo-release.tar.gz /home/ubuntu/deployment/\",
+              \"tar -xzf /home/ubuntu/deployment/cmake-demo-release.tar.gz -C /home/ubuntu/deployment\",
+              \"chmod +x /home/ubuntu/deployment/cmake_demo\",
+              \"/home/ubuntu/deployment/cmake_demo\",
+              \"echo Deployment successful\"
+            ]" \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command ID: $COMMAND_ID"
+
+          aws ssm wait command-executed \
+            --region "$AWS_REGION" \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID"
+
+          aws ssm get-command-invocation \
+            --region "$AWS_REGION" \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID"
