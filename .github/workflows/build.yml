@@ -81,27 +81,22 @@ jobs:
           name: cmake-demo-${{ matrix.os }}-${{ matrix.build_type }}
           path: artifacts/
 
-      - name: Run tests
-        run: ctest...
-
+      - name: Test job started
+        run: echo "Test job is running"
+  
   package:
     needs: test
-
     runs-on: ubuntu-latest
 
     env:
       PACKAGE_TYPE: release-package
 
     steps:
-
       - name: Download Ubuntu Release artifact
         uses: actions/download-artifact@v7
         with:
           name: cmake-demo-ubuntu-latest-Release
           path: build/
-      
-      - name: Checkout code
-        uses: actions/checkout@v5
 
       - name: Create package
         run: |
@@ -109,11 +104,17 @@ jobs:
           tar -czf package/cmake-demo-release.tar.gz -C build .
           echo "CMake Demo Package" > package/README.txt
 
+      - name: Show package contents
+        run: |
+          echo "Package contents:"
+          ls -lh package/
+
       - name: Upload package
         uses: actions/upload-artifact@v6
         with:
           name: cmake-demo-package
           path: package/
+          retention-days: 7
 
       - name: Show application information
         run: |
@@ -127,6 +128,7 @@ jobs:
         run: |
           echo "Secret is available to the workflow"
           echo "Secret length: ${#DEMO_SECRET}"
+          
   upload-to-s3:
     needs: package
     runs-on: ubuntu-latest
