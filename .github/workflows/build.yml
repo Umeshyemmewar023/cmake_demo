@@ -185,18 +185,29 @@ jobs:
             --generate-notes
   deploy:
     needs: release
+
     if: startsWith(github.ref, 'refs/tags/v')
+
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Download package
-        uses: actions/download-artifact@v7
-        with:
-          name: cmake-demo-package
-          path: deployment/
+    permissions:
+      id-token: write
+      contents: read
 
-      - name: Deploy application
+    steps:
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::133197206066:role/GitHubActions-S3-Deploy
+          aws-region: ap-south-2
+
+      - name: Test SSM connection
+        env:
+          AWS_REGION: ap-south-2
         run: |
-          echo "Starting deployment..."
-          echo "Deploying version: ${{ github.ref_name }}"
-          echo "Deployment successful!"
+          aws ssm send-command \
+            --region "$AWS_REGION" \
+            --instance-ids "i-0e0fd8984113cc520" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["echo Hello from GitHub Actions"]'
